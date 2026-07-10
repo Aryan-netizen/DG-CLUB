@@ -98,14 +98,14 @@ function SuccessDialog({ amount, onClose }: { amount: number; onClose: () => voi
           </motion.div>
 
           <h2 id="success-title" className="text-xl font-extrabold tracking-tight text-white font-mono uppercase">
-            Payment Submitted
+            Payment Verified
           </h2>
           <p className="mt-1.5 font-mono text-3xl font-black text-emerald-400 tabular-nums">
             ₹{amount.toLocaleString("en-IN")}
           </p>
           <p className="mt-3 text-[13px] leading-relaxed text-[#94A3B8]">
-            Your recharge request has been received. Wallet will be credited
-            within 2–5 minutes.
+            Your recharge request has been marked as verified. Wallet credit will
+            be processed within 2–5 minutes.
           </p>
 
           {/* Trust badges */}
@@ -179,6 +179,7 @@ export default function QRPage() {
   const [amount, setAmount] = useState(500);
   const [customInput, setCustomInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -189,6 +190,7 @@ export default function QRPage() {
   function selectPreset(value: number) {
     setAmount(value);
     setCustomInput("");
+    setPaymentVerified(false);
   }
 
   function handleCustomChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -196,6 +198,7 @@ export default function QRPage() {
     setCustomInput(val);
     const num = parseInt(val, 10);
     if (!isNaN(num) && num > 0) setAmount(num);
+    setPaymentVerified(false);
   }
 
   function handleConfirm() {
@@ -203,8 +206,14 @@ export default function QRPage() {
       toast.error("Minimum recharge amount is ₹10");
       return;
     }
+
+    if (!paymentVerified) {
+      toast.error("Please confirm that the UPI payment has been completed first.");
+      return;
+    }
+
     setShowSuccess(true);
-    toast.success("Recharge request submitted!");
+    toast.success("Payment verified and recharge request submitted!");
   }
 
   return (
@@ -325,6 +334,17 @@ export default function QRPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.25 }}
             >
+              <label className="mb-3 flex items-start gap-2 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2.5 text-[12px] leading-relaxed text-[#94A3B8]">
+                <input
+                  type="checkbox"
+                  checked={paymentVerified}
+                  onChange={(e) => setPaymentVerified(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-white/15 bg-transparent accent-primary-500"
+                />
+                <span>
+                  I have completed the UPI payment and want to verify this recharge.
+                </span>
+              </label>
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.01 }}
@@ -332,10 +352,10 @@ export default function QRPage() {
                 onClick={handleConfirm}
                 className="w-full rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 py-4 text-[14px] font-bold text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] transition-all duration-200 hover:brightness-110 hover:shadow-[0_0_30px_rgba(139,92,246,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
               >
-                I&apos;ve Completed the Payment
+                Verify Payment
               </motion.button>
               <p className="mt-2.5 text-center text-[11px] text-[#94A3B8]/40 uppercase tracking-widest font-mono">
-                Only tap after your UPI payment is confirmed
+                Status: {paymentVerified ? "Verified" : "Pending verification"}
               </p>
             </motion.div>
           </div>
@@ -425,7 +445,10 @@ export default function QRPage() {
       {showSuccess && (
         <SuccessDialog
           amount={amount}
-          onClose={() => setShowSuccess(false)}
+          onClose={() => {
+            setShowSuccess(false);
+            setPaymentVerified(false);
+          }}
         />
       )}
 
