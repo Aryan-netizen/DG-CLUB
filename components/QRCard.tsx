@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 
 interface QRCardProps {
-  upiId: string;
+  upiId: any;
   amount: number;
   name?: string;
 }
