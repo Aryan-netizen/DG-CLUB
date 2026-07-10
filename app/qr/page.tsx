@@ -18,7 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import QRCard from "@/components/QRCard";
 import type { Transaction } from "@/types";
 
-const UPI_ID = "dgclub@upi";
+const UPI_ID = process.env.UPI_ID;
 const PRESET_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
 
 const RECHARGE_HISTORY: Transaction[] = [
